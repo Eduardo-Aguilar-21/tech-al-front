@@ -1,6 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as taskService from "../services/taskService"
 
+export const useGetTaskPriorities = () => {
+    return useQuery({
+        queryKey: ["tasks"], 
+        queryFn: taskService.getTaskPriorities
+    });
+}
+
+export const useGetTaskStatuses = () => {
+    return useQuery({
+        queryKey: ["tasks"], 
+        queryFn: taskService.getTaskStatuses
+    });
+}
+
 // Get all tasks
 export const useGetAllTasks = () => {
     return useQuery({
@@ -9,7 +23,7 @@ export const useGetAllTasks = () => {
     });
 };
 
-// Get a task by ID
+// Get a task by ID 
 export const useGetTaskById = (id) => {
     return useQuery({
         queryKey: ["task", id], 

@@ -13,39 +13,30 @@ export default function NavbarComponent() {
 
   const username = localStorage.getItem("username");
   const { data: user, isLoading, isError } = useFindByUsername(username);
+
   const navigate = useNavigate();
+
+  if (user) {
+    localStorage.setItem("userId", user.id);
+    localStorage.setItem("organizationId", user.organization.id);
+  }
 
   return (
     <>
       <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
           <Sidebar />
-          <Navbar.Brand href="#">Mi Aplicación</Navbar.Brand>
+          <Navbar.Brand href="#">TeachIA</Navbar.Brand>
 
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link onClick={() => navigate("/")}>Inicio</Nav.Link>
               <Nav.Link onClick={() => navigate("/administration")}>Administracion</Nav.Link>
-              <Nav.Link href="#">V</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-
-      <Offcanvas show={show} onHide={handleClose} placement="start">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Menú</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          <Nav className="flex-column">
-            <Nav.Link href="#">Inicio</Nav.Link>
-            <Nav.Link href="#">Perfil</Nav.Link>
-            <Nav.Link href="#">Configuración</Nav.Link>
-            <Nav.Link href="#">Cerrar sesión</Nav.Link>
-          </Nav>
-        </Offcanvas.Body>
-      </Offcanvas>
     </>
   );
 }

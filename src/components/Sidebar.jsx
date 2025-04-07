@@ -28,7 +28,8 @@ export default function Sidebar() {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav className="flex-column">
-            <Nav.Link href="#">Inicio</Nav.Link>
+            <Nav.Link onClick={() => navigate("/")}>Inicio</Nav.Link>
+            <Nav.Link onClick={() => navigate("/administration")}>Administración</Nav.Link>
             <Nav.Link href="#">Perfil</Nav.Link>
             <Nav.Link href="#">Configuración</Nav.Link>
             <Nav.Link onClick={handleLogout} style={{ cursor: "pointer", color: "red" }}>

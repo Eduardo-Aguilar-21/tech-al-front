@@ -1,13 +1,23 @@
 import api from "../axiosConfig";
 
-const endpoint = "/task";
+const endpoint = "/tasks";
+
+export const getTaskPriorities = async () => {
+    const response = await api.get(`${endpoint}/priorities`);   
+    return response.data;
+};
+
+export const getTaskStatuses = async () => {
+    const response = await api.get(`${endpoint}/statuses`);   
+    return response.data;
+}
 
 export const getAllTasks = async() => {
     const response = await api.get(endpoint);
     return response.data
 };
 
-export const getTaskById = async (id) => {
+export const getTaskById = async (id) => { 
     const response = await api.get(`/${endpoint}/${id}`);   
     return response.data;
 };

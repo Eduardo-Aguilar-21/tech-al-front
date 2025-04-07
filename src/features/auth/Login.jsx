@@ -5,7 +5,7 @@ import { login } from "../../api/services/authService";
 import { useFindByUsername } from "../../api/hooks/useUser";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();

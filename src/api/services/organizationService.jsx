@@ -17,8 +17,8 @@ export const saveOrganization = async (organization) => {
     return response.data;
 }
 
-export const updateOrganization = async (id, organization) => {
-    const response = await api.put(`${endpoint}/${id}`, organization);
+export const updateOrganization = async (organization) => {
+    const response = await api.put(`${endpoint}/${organization.id}`, organization);
     return response.data;
 }
 

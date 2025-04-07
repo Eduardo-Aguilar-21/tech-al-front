@@ -1,81 +1,108 @@
 import React, { useState } from "react";
-import NavbarComponent from "../../components/Navbar";
-import { useGetAllOrganizations } from "../../api/hooks/useOrganization";
-import { useSaveOrganization } from "../../api/hooks/useOrganization";
-import { useDeleteOrganization } from "../../api/hooks/useOrganization";
 import { Button, Table, Modal, Form } from "react-bootstrap";
-import Swal from "sweetalert2"; // Importar SweetAlert2
+import NavbarComponent from "../../components/Navbar";
+
+import { useGetAllOrganizations, useSaveOrganization, useDeleteOrganization, useUpdateOrganization } from "../../api/hooks/useOrganization";
+
 import { showErrorAlert, showSuccessAlert, showWarningAlert } from "../../utils/alertMessages";
 
+import { CiCirclePlus } from "react-icons/ci";
+import { FaEdit, FaTrash, FaUsers } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 const Organization = () => {
+  const navigate = useNavigate();
   const { data: organizations, isLoading, error } = useGetAllOrganizations();
   const { mutate: saveOrganization } = useSaveOrganization();
+  const { mutate: updateOrganization } = useUpdateOrganization();
   const { mutate: deleteOrganization } = useDeleteOrganization();
 
-  // Estado para el modal
   const [showModal, setShowModal] = useState(false);
-  const [organizationName, setOrganizationName] = useState(""); 
+  const [organizationName, setOrganizationName] = useState("");
+  const [selectedOrganization, setSelectedOrganization] = useState(null); // ⭐
 
-  // Manejo de apertura y cierre del modal
   const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setOrganizationName("");
+    setSelectedOrganization(null); // Reset
+  };
 
-  // Manejo del formulario para guardar la organización
-  const handleSaveOrganization = () => {
-    const newOrganization = {
+  const handleSaveOrUpdateOrganization = () => {
+    if (!organizationName.trim()) {
+      showErrorAlert("Validation Error", "Organization name cannot be empty.");
+      return;
+    }
+
+    const payload = {
+      id: selectedOrganization?.id, 
       name: organizationName,
     };
 
-    saveOrganization(newOrganization, {
-      onSuccess: () => {
-        handleCloseModal();
-        setOrganizationName("");
-        showSuccessAlert("Success!", "Organization added successfully.");
-      },
-      onError: (error) => {
-        console.error("Error saving organization:", error);
-        showErrorAlert("Error!", "There was an issue adding the organization.");
-      },
-    });
+    if (selectedOrganization) {
+      updateOrganization(payload, {
+        onSuccess: () => {
+          showSuccessAlert("Updated!", "Organization updated successfully.");
+          handleCloseModal();
+        },
+        onError: (error) => {
+          console.error("Update error:", error);
+          showErrorAlert("Error!", "Failed to update organization.");
+        },
+      });
+    } else {
+      saveOrganization(
+        { name: organizationName },
+        {
+          onSuccess: () => {
+            showSuccessAlert("Success!", "Organization added successfully.");
+            handleCloseModal();
+          },
+          onError: (error) => {
+            console.error("Save error:", error);
+            showErrorAlert("Error!", "Failed to add organization.");
+          },
+        }
+      );
+    }
+  };
+
+  const handleEdit = (organization) => {
+    setSelectedOrganization(organization);
+    setOrganizationName(organization.name);
+    setShowModal(true);
   };
 
   const handleDelete = (id) => {
-    showWarningAlert(
-      "Are you sure?",
-      "You won't be able to revert this!",
-      "Yes, delete it!",
-      "No, keep it"
-    ).then((result) => {
+    showWarningAlert("Are you sure?", "You won't be able to revert this!", "Yes, delete it!", "No, keep it").then((result) => {
       if (result.isConfirmed) {
         deleteOrganization(id, {
           onSuccess: () => {
             showSuccessAlert("Deleted!", "Organization has been deleted.");
           },
           onError: (error) => {
-            console.error("Error deleting organization:", error);
-            showErrorAlert("Error!", "There was an issue deleting the organization.");
+            console.error("Delete error:", error);
+            showErrorAlert("Error!", "Failed to delete organization.");
           },
         });
       }
     });
   };
+
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading organizations</p>;
 
   return (
     <div className="d-flex flex-column h-100">
-      {/* Navbar */}
       <NavbarComponent />
-
       <main className="p-4">
         <h1 className="text-center mb-4">Organizations</h1>
 
-        {/* Botón para agregar una organización */}
         <Button variant="success" onClick={handleShowModal} className="mb-4">
+          <CiCirclePlus size={30} className="mx-2" />
           Add Organization
         </Button>
 
-        {/* Tabla de organizaciones */}
         <Table striped bordered hover>
           <thead>
             <tr>
@@ -90,14 +117,16 @@ const Organization = () => {
                 <td>{index + 1}</td>
                 <td>{organization.name}</td>
                 <td>
-                  {/* Botones de acción (editar, eliminar) */}
-                  <Button variant="info" className="mr-2">
+                  <Button variant="info" className="mx-2" onClick={() => navigate(`/groups/${organization.id}`)}>
+                    <FaUsers size={16} className="mx-2" />
+                    View Groups
+                  </Button>
+                  <Button variant="warning" className="mx-2" style={{ margin: "0px 10px" }} onClick={() => handleEdit(organization)}>
+                    <FaEdit size={16} className="mx-2" />
                     Edit
                   </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDelete(organization.id)}
-                  >
+                  <Button variant="danger" className="mx-2"  onClick={() => handleDelete(organization.id)}>
+                    <FaTrash size={16} className="mx-2" />
                     Delete
                   </Button>
                 </td>
@@ -107,10 +136,10 @@ const Organization = () => {
         </Table>
       </main>
 
-      {/* Modal para agregar una nueva organización */}
+      {/* Modal de Crear/Editar */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Organization</Modal.Title>
+          <Modal.Title>{selectedOrganization ? "Edit Organization" : "Add Organization"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -129,8 +158,8 @@ const Organization = () => {
           <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleSaveOrganization}>
-            Save Organization
+          <Button variant="primary" onClick={handleSaveOrUpdateOrganization}>
+            {selectedOrganization ? "Update" : "Save"} Organization
           </Button>
         </Modal.Footer>
       </Modal>
